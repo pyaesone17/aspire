@@ -17,6 +17,6 @@ class LoanException extends Exception
             'errors' => [
                 $this->getMessage(),
             ],
-        ]);
+        ], 400);
     }
 }

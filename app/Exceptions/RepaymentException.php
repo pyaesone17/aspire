@@ -17,6 +17,6 @@ class RepaymentException extends Exception
             'errors' => [
                 $this->getMessage(),
             ],
-        ]);
+        ], 400);
     }
 }

@@ -24,7 +24,7 @@ class RepaymentRequest extends FormRequest
     public function rules()
     {
         return [
-            'amount' => 'required|int'
+            'amount' => 'required',
         ];
     }
 }

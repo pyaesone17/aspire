@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use App\Exceptions\RepaymentException;
 use App\Exceptions\LoanException;
 use App\Repository\Contracts\LoanRepositoryContract;
@@ -53,20 +54,27 @@ class LoanService
             throw new RepaymentException('Invalid loan', 0);
         }
 
+        $dueDate = $loan->created_at->addMonths($loan->duration);
+        $now = Carbon::now();
+
+        if ($now->gt($dueDate)) {
+            throw new RepaymentException('Loan is already due, you can not pay anymore', 1);
+        }
+
         if ($loan->isFullyPaid()) {
-            throw new RepaymentException('Loan is already paid', 1);
+            throw new RepaymentException('Loan is already paid', 2);
         }
 
         if ($this->userRepository->find($userId) === null) {
-            throw new RepaymentException('Invalid User', 2);
+            throw new RepaymentException('Invalid User', 3);
         }
 
-        $shouldPay = $this->shouldPay($loan->total_amount, $loan->repayment_frequency);
+        $shouldPay = round($this->shouldPay($loan->total_amount, $loan->repayment_frequency), 2);
+        $$amount = round($amount, 2);
 
-        if ($shouldPay != $amount) {
+        if (abs($shouldPay - $amount) > 0.01) {
             throw new RepaymentException(
-                sprintf('Amount mismatch, should pay %d but received %d', $shouldPay, $amount),
-                3
+                sprintf('Amount mismatch, should pay %d but received %d', $shouldPay, $amount), 4
             );
         }
 
