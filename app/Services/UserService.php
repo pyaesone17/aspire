@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Repository\UserRepository;
 use Illuminate\Contracts\Hashing\Hasher;
+use App\Repository\Contracts\UserRepositoryContract;
 
 class UserService
 {
@@ -11,7 +11,7 @@ class UserService
     
     public $userRepository;
 
-    public function __construct(UserRepository $userRepository, Hasher $hasher)
+    public function __construct(UserRepositoryContract $userRepository, Hasher $hasher)
     {
         $this->userRepository = $userRepository;
         $this->hasher = $hasher;

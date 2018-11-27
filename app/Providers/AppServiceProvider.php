@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Repository\{EloquentLoanRepository, EloquentUserRepository};
+use App\Repository\Contracts\{LoanRepositoryContract, UserRepositoryContract};
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(LoanRepositoryContract::class, EloquentLoanRepository::class);
+        $this->app->bind(UserRepositoryContract::class, EloquentUserRepository::class);
     }
 }

@@ -1,9 +1,11 @@
 <?php 
 
 namespace App\Repository;
-use App\User;
 
-class UserRepository
+use App\User;
+use App\Repository\Contracts\UserRepositoryContract;
+
+class EloquentUserRepository implements UserRepositoryContract
 {
     public $user;
 

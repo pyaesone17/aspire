@@ -13,7 +13,8 @@ class Loan extends Model
      */
     protected $fillable = [
         'user_id', 'duration', 'interest_rate',
-        'arrangement_fee', 'repayment_frequency', 'amount'
+        'arrangement_fee', 'repayment_frequency', 'amount', 
+        'total_amount'
     ];
 
     public function repayments()
@@ -21,8 +22,8 @@ class Loan extends Model
         return $this->hasMany(Repayment::class);
     }
 
-    public function repay($attributes)
-    {
-        $this->repayments()->create($attributes);
+    public function isFullyPaid()
+    {   
+        return $this->repayment_frequency === $this->repayments->count();
     }
 }

@@ -18,7 +18,7 @@ class LoanController extends Controller
      */
     public function __invoke(LoanService $loanService, LoanRequest $request)
     {
-        $loan = $loanService->takeLoan(
+        $loan = $loanService->takeLoan( 
             $request->user_id,
             $request->amount,
             $request->duration,

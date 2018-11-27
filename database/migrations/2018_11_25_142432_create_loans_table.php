@@ -16,11 +16,12 @@ class CreateLoansTable extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
-            $table->integer('amount')->unsigned();
+            $table->decimal('amount',10,2)->unsigned();
             $table->integer('duration')->unsigned();
-            $table->integer('interest_rate')->unsigned();
-            $table->integer('arrangement_fee')->unsigned();
+            $table->decimal('interest_rate',10,2)->unsigned();
+            $table->decimal('arrangement_fee',10,2)->unsigned();
             $table->integer('repayment_frequency')->unsigned();
+            $table->decimal('total_amount',10,2)->unsigned()->nullable();
             $table->timestamps();
         });
     }

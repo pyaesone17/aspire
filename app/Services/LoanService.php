@@ -1,30 +1,46 @@
-<?php 
+<?php
 
 namespace App\Services;
 
-use Exception;
-use App\Repository\LoanRepository;
-use App\Repository\UserRepository;
+use App\Exceptions\RepaymentException;
+use App\Exceptions\LoanException;
+use App\Repository\Contracts\LoanRepositoryContract;
+use App\Repository\Contracts\UserRepositoryContract;
 
 class LoanService
 {
     public $userRepository;
-    
+
     public $loanRepository;
 
-    public function __construct(LoanRepository $loanRepository, UserRepository $userRepository)
+    public function __construct(LoanRepositoryContract $loanRepository, UserRepositoryContract $userRepository)
     {
         $this->loanRepository = $loanRepository;
         $this->userRepository = $userRepository;
     }
 
-    public function takeLoan($userId, ...$data)
+    public function takeLoan($userId, $amount, $duration, $interestRate, $arrangementFee, $repaymentFrequency)
     {
-        if ($this->userRepository->find($userId)===null) {
-            throw new Exception("Invalid User");
+        if ($this->userRepository->find($userId) === null) {
+            throw new LoanException('Invalid User', 0);
         }
- 
-        $loan = $this->loanRepository->create(...array_merge([$userId], $data));
+
+        $totalAmount = $this->calculateTotal(
+            $amount,
+            $interestRate,
+            $repaymentFrequency,
+            $arrangementFee
+        );
+
+        $loan = $this->loanRepository->create(
+            $userId,
+            $amount,
+            $duration,
+            $interestRate,
+            $arrangementFee,
+            $repaymentFrequency,
+            $totalAmount
+        );
 
         return $loan;
     }
@@ -34,15 +50,24 @@ class LoanService
         $loan = $this->loanRepository->find($loanId);
 
         if ($loan === null) {
-            throw new Exception("Invalid loan");
+            throw new RepaymentException('Invalid loan', 0);
         }
 
-        if ($this->isFullyPaid($loanId)) {
-            throw new Exception("Loan is already paid");
+        if ($loan->isFullyPaid()) {
+            throw new RepaymentException('Loan is already paid', 1);
         }
 
-        if ($this->userRepository->find($userId)===null) {
-            throw new Exception("Invalid User");
+        if ($this->userRepository->find($userId) === null) {
+            throw new RepaymentException('Invalid User', 2);
+        }
+
+        $shouldPay = $this->shouldPay($loan->total_amount, $loan->repayment_frequency);
+
+        if ($shouldPay != $amount) {
+            throw new RepaymentException(
+                sprintf('Amount mismatch, should pay %d but received %d', $shouldPay, $amount),
+                3
+            );
         }
 
         $loan = $this->loanRepository->createRepay($userId, $loanId, $amount);
@@ -50,18 +75,15 @@ class LoanService
         return $loan;
     }
 
-    protected function isFullyPaid($loan)
-    {   
-        if ($loan->repayment_frequency===$loan->repayments->count()) {
-            return true;
-        }
+    protected function calculateTotal($amount, $interestRate, $repaymentFrequency, $arrangementFee)
+    {
+        $interestFee = $amount * ($interestRate / 100);
+
+        return $amount + $arrangementFee + ($repaymentFrequency * $interestFee);
     }
 
-    protected function totalNet($loan)
+    protected function shouldPay($totalAmount, $repaymentFrequency)
     {
-        $totalAmount = $loan->amount;
-        $interestFees = $loan->amount * ( $loan->interest_fee / 100 );
-
-        return $totalAmount + ($loan->repayment_frequency * $interestFees) + $loan->arrangement_fee;
+        return $totalAmount / $repaymentFrequency;
     }
 }

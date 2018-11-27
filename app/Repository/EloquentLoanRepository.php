@@ -1,9 +1,11 @@
 <?php 
 
 namespace App\Repository;
-use App\Loan;
 
-class LoanRepository
+use App\Loan;
+use App\Repository\Contracts\LoanRepositoryContract;
+
+class EloquentLoanRepository implements LoanRepositoryContract
 {
     public $loan;
 
@@ -17,7 +19,7 @@ class LoanRepository
         return $this->loan->newQuery()->with('repayments')->find($id);
     }
 
-    public function create($userId, $amount, $duration, $repaymentFrequency, $interestRate, $arrangementFee)
+    public function create($userId, $amount, $duration, $interestRate, $arrangementFee, $repaymentFrequency, $totalAmount)
     {
         return $this->loan->create([
             'amount' => $amount,
@@ -25,7 +27,8 @@ class LoanRepository
             'duration' => $duration, 
             'repayment_frequency' => $repaymentFrequency, 
             'interest_rate' => $interestRate, 
-            'arrangement_fee' => $arrangementFee
+            'arrangement_fee' => $arrangementFee,
+            'total_amount' => $totalAmount,
         ]);
     }
 
