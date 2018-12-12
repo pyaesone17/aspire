@@ -70,7 +70,7 @@ class LoanService
         }
 
         $shouldPay = round($this->shouldPay($loan->total_amount, $loan->repayment_frequency), 2);
-        $$amount = round($amount, 2);
+        $amount = round($amount, 2);
 
         if (abs($shouldPay - $amount) > 0.01) {
             throw new RepaymentException(
